@@ -1,0 +1,6 @@
+#!/bin/sh
+if mountpoint -q /srv/pool1; then
+	return 0
+else
+	return 1
+fi
