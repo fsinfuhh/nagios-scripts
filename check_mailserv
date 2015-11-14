@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PID=$(ps ax | grep 'manage.py mailserv' | grep -v grep | awk '{print $1}')
+if [ $PID ]; then
+	echo "mafiasi-mailserv is running with PID" $PID;
+	exit 0
+else
+	echo "Can't find mafiasi-mailserv process (manage.py mailserv).";
+	exit 2
+fi
+
