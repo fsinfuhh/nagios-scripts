@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if zpool list -Ho health | grep -v ONLINE > /dev/null; then
+    echo "ZFS: At least one pool's health is not ONLINE!"
+    zpool status -x
+    exit 2
+fi
+
+for capacity in "$(zpool list -Ho capacity | cut -d% -f 1)"; do
+    if [ "$capacity" -gt 80 ]; then
+        echo "ZFS: At least one pool is nearly full!"
+        zpool list -o name,capacity,free
+        exit 1
+    fi
+done
+
+echo "ZFS: Everything is fine."
+exit 0
