@@ -6,7 +6,7 @@ if sudo zpool list -Ho health | grep -v ONLINE > /dev/null; then
     exit 2
 fi
 
-for capacity in "$(sudo zpool list -Ho capacity | cut -d% -f 1)"; do
+sudo zpool list -Ho capacity | cut -d% -f 1 | while read capacity; do
     if [ "$capacity" -gt 80 ]; then
         echo "ZFS: At least one pool is nearly full!"
         sudo zpool list -o name,capacity,free
