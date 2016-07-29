@@ -14,7 +14,10 @@ radeon 0000:0b:05.0|\
 drm:r100_cp_init|\
 Assuming drive cache: write through|\
 piix4_smbus 0000:00:07.3|\
-intel_rapl:"
+intel_rapl:|\
+Ignoring unsafe software power cap!|\
+watchdog: iTCO_wdt: cannot register|\
+watchdog: iTCO_wdt: a legacy watchdog module is probably present."
 
 output=$(dmesg -T -l "$SEVERITIES" | egrep -v "$WHITELIST")
 
