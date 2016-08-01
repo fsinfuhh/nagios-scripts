@@ -26,6 +26,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
+import sys
 import time
 import hmac
 import hashlib
@@ -74,8 +75,10 @@ def buildpacket(tcp, key, digestmod):
 
 def checkserver(host, port, tcp, timeout, key, digest):
     packet = buildpacket(tcp, key, digest)
-    if tcp: checkserver_tcp(host, port, timeout, packet)
-    else: checkserver_udp(host, port, timeout, packet)
+    if tcp:
+        return checkserver_tcp(host, port, timeout, packet)
+    else:
+        return checkserver_udp(host, port, timeout, packet)
 
 def checkserver_udp(host, port, timeout, packet):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -166,4 +169,4 @@ def main():
     return checkserver(args.host, args.port, args.tcp, args.timeout, key, digest)
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
