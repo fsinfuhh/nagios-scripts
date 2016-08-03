@@ -17,7 +17,7 @@ queue_directory=`postconf -h queue_directory`
 : ${CRITICAL_DEFAULT_THRESHOLD="50"}
 : ${WARNING_DEFAULT_THRESHOLD="25"}
 
-. $PROGPATH/utils.sh
+. /usr/lib/nagios/plugins/utils.sh
 
 EXIT_CODE="OK"
 
