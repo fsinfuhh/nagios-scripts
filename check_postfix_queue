@@ -1,0 +1,174 @@
+#!/bin/sh
+
+# 2011 (C) Artyom Nosov <chip-set@mail.ru>
+#
+# v1.0: initial release
+# v1.2: fix indent and dash support
+# v1.3: check directory $queue_directory permissions (thx Daniel Beardsmore)
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:${PATH}; export PATH
+LC_MESSAGES=C; export LC_MESSAGES
+
+PROGNAME=`basename $0`
+PROGPATH=`dirname $(readlink -f $0)`
+
+queue_directory=`postconf -h queue_directory`
+
+: ${CRITICAL_DEFAULT_THRESHOLD="50"}
+: ${WARNING_DEFAULT_THRESHOLD="25"}
+
+. $PROGPATH/utils.sh
+
+EXIT_CODE="OK"
+
+print_usage() {
+  echo "Usage: $PROGNAME [OPTION]"
+  echo 
+  echo "Options: "
+  echo " -c critical"
+  echo "    Critical threshold, defaults to $CRITICAL_DEFAULT_THRESHOLD"
+  echo
+  echo " -w warning"
+  echo "    Warning threshold, defaults to $WARNING_DEFAULT_THRESHOLD"
+  echo
+  echo " -h"
+  echo "    Display this help and exit"
+  echo
+  echo "Examples: "
+  echo "$0 -w 100000 -c 200000"
+}
+
+print_help() {
+  print_usage
+  echo 
+  echo "This plugin checks status of postfix queues."
+	echo 
+  exit $STATE_OK
+}
+
+exitf() {
+  local state=$1
+  shift
+  local message="$*"
+
+  echo $message
+
+  exit $state
+}
+
+eval_state() {
+  local curval=$1
+
+  if [ $curval -lt 0 ]; then
+    max_state $EXIT_CODE "CRITICAL"
+  fi
+
+  if [ $curval -gt $warning_threshold ]; then
+    max_state $EXIT_CODE "WARNING"
+  fi
+
+  if [ $curval -gt $critical_threshold ]; then
+    max_state $EXIT_CODE "CRITICAL"
+  fi
+}
+
+upvar() {
+  if unset -v "$1"; then       # Unset & validate varname
+    if [ $# -eq 2 ]; then
+      eval $1=\"\$2\"          # Return single value
+    else
+      eval $1=\(\"\${@:2}\"\)  # Return array
+    fi
+  fi
+}
+
+isint() {
+  local var="$*"
+  local retval=
+
+  expr "$var" : '-\?[0-9]\+$' > /dev/null
+  retval=$?
+
+  return $retval
+}
+
+max_state() {
+  local a=$1
+  local b=$2
+
+  if [ $a = "CRITICAL" -o $b = "CRITICAL" ]; then
+    EXIT_CODE="CRITICAL"; return
+  elif [ $a = "WARNING" -o $b = "WARNING" ]; then
+    EXIT_CODE="WARNING"; return
+  elif [ $a = "OK" -o $b = "OK" ]; then
+    EXIT_CODE="OK"; return
+  elif [ $a = "UNKNOWN" -o $b = "UNKNOWN" ]; then
+    EXIT_CODE="UNKNOWN"; return
+  elif [ $a = "DEPENDENT" -o $b = "DEPENDENT" ]; then
+    EXIT_CODE="DEPENDENT"; return
+  fi
+
+  EXIT_CODE="UNKNOWN"; return
+}
+
+code2status() {
+  local code=$1
+  local status
+
+  case "$code" in
+    [oO][kK])                             status=$STATE_OK
+                                          ;;
+    [cC][rR][iI][tT][iI][cC][aA][lL])     status=$STATE_CRITICAL
+                                          ;;
+    [wW][aA][rR][nN][iI][nN][gG])         status=$STATE_WARNING
+                                          ;;
+    [dD][eE][pP][eE][nN][dD][eE][nN][tT]) status=$STATE_DEPENDENT
+                                          ;;
+    *)                                    status=$STATE_UNKNOWN
+                                          ;;
+  esac
+
+  echo $status
+}
+
+critical_threshold=$CRITICAL_DEFAULT_THRESHOLD
+warning_threshold=$WARNING_DEFAULT_THRESHOLD
+
+while getopts c:hw: opt
+do
+  case "$opt" in
+    c)
+      if ! isint "$OPTARG"; then
+        exitf $STATE_CRITICAL "String \"$OPTARG\" is not a valid integer!"
+      fi
+      critical_threshold="$OPTARG"
+      ;;
+    w)
+      if ! isint "$OPTARG"; then
+        exitf $STATE_CRITICAL "String \"$OPTARG\" is not a valid integer!"
+      fi
+      warning_threshold="$OPTARG";
+      ;;
+    h)
+      print_help
+      exitf $STATE_OK
+  esac
+done
+shift `expr $OPTIND - 1`
+
+for d in incoming active maildrop deferred bounce; do
+  if [ ! -r $queue_directory/$d ]; then
+    upvar $d -1
+    continue
+  fi
+  upvar $d `find $queue_directory/$d -type f -print 2>/dev/null | wc -l`
+done
+
+INFO_MSG="incoming queue messages: $incoming active queue messages: $active maildrop queue messages: $maildrop deferred queue messages: $deferred bounce queue messages: $bounce"
+
+for d in incoming active maildrop deferred bounce; do
+  eval eval_state \$$d
+done
+
+exitf `code2status $EXIT_CODE` "$EXIT_CODE: $INFO_MSG"
+
