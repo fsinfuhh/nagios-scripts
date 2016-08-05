@@ -6,6 +6,9 @@
 # v1.2: fix indent and dash support
 # v1.3: check directory $queue_directory permissions (thx Daniel Beardsmore)
 
+# XXX: add the following sudo access rights to /etc/sudoers.d/postfix_nagios:
+# nagios  ALL = NOPASSWD: /usr/bin/find /var/spool/postfix/incoming -type f -print, /usr/bin/find /var/spool/postfix/active -type f -print, /usr/bin/find /var/spool/postfix/maildrop -type f -print, /usr/bin/find /var/spool/postfix/deferred -type f -print, /usr/bin/find /var/spool/postfix/bounce -type f -print
+
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:${PATH}; export PATH
 LC_MESSAGES=C; export LC_MESSAGES
 
@@ -157,11 +160,11 @@ done
 shift `expr $OPTIND - 1`
 
 for d in incoming active maildrop deferred bounce; do
-  if [ ! -r $queue_directory/$d ]; then
+  if [ ! -d $queue_directory/$d ]; then
     upvar $d -1
     continue
   fi
-  upvar $d `find $queue_directory/$d -type f -print 2>/dev/null | wc -l`
+  upvar $d `sudo find $queue_directory/$d -type f -print 2>/dev/null | wc -l`
 done
 
 INFO_MSG="incoming queue messages: $incoming active queue messages: $active maildrop queue messages: $maildrop deferred queue messages: $deferred bounce queue messages: $bounce"
