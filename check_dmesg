@@ -17,7 +17,9 @@ piix4_smbus 0000:00:07.3|\
 intel_rapl:|\
 Ignoring unsafe software power cap!|\
 watchdog: iTCO_wdt: cannot register|\
-watchdog: iTCO_wdt: a legacy watchdog module is probably present."
+watchdog: iTCO_wdt: a legacy watchdog module is probably present.|\
+kvm: disabled by bios|\
+radeon kernel modesetting for R600 or later requires firmware-linux-nonfree."
 
 output=$(dmesg -T -l "$SEVERITIES" | egrep -v "$WHITELIST")
 
