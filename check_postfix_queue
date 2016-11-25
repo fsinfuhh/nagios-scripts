@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # 2011 (C) Artyom Nosov <chip-set@mail.ru>
 #

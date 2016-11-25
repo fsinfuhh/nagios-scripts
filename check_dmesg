@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # Credits go to: http://lzone.de/blog/Nagios%20Plugin%20for%20dmesg%20Monitoring
 

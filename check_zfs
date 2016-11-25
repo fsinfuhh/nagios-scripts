@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # XXX: add the following sudo access rights to /etc/sudoers.d/zfs:
 # Cmnd_Alias C_ZFS = \
