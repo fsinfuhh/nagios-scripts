@@ -9,12 +9,12 @@ def check_file_age(file_path: str, warn_age: timedelta,
                    critical_age: timedelta) -> int:
     """Check the age of a file. Return 0 on ok, 1 on warning and 2 on crit."""
     if not os.path.isfile(file_path):
-        print('file does not exist')
+        print('file {} does not exist'.format(file_path))
         return 2
     file_mtime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
     now = datetime.now()
     age = now - file_mtime
-    print('age of file is {}'.format(str(age)))
+    print('age of file {} is {}'.format(file_path, str(age)))
     if age >= critical_age:
         return 2
     elif age >= warn_age:
