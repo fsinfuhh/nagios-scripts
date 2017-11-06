@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Monitoring check plugin for file age."""
+from datetime import datetime, timedelta
+import os
+import sys
+
+
+def check_file_age(file_path: str, warn_age: timedelta,
+                   critical_age: timedelta) -> int:
+    """Check the age of a file. Return 0 on ok, 1 on warning and 2 on crit."""
+    if not os.path.isfile(file_path):
+        print('file does not exist')
+        return 2
+    file_mtime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
+    now = datetime.now()
+    age = now - file_mtime
+    print('age of file is {}'.format(str(age)))
+    if age >= critical_age:
+        return 2
+    elif age >= warn_age:
+        return 1
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(check_file_age(
+        sys.argv[1], timedelta(seconds=int(sys.argv[2])),
+        timedelta(seconds=int(sys.argv[3]))))
