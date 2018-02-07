@@ -21,7 +21,7 @@ watchdog: iTCO_wdt: a legacy watchdog module is probably present.|\
 kvm: disabled by bios|\
 radeon kernel modesetting for R600 or later requires firmware-linux-nonfree."
 
-output=$(dmesg -T -l "$SEVERITIES" | egrep -v "$WHITELIST")
+output=$(sudo dmesg -T -l "$SEVERITIES" | egrep -v "$WHITELIST")
 
 if [ -z "$output" ]; then
     echo "All is fine."
