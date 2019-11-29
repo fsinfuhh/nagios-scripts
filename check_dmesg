@@ -21,6 +21,8 @@ watchdog: iTCO_wdt: a legacy watchdog module is probably present.|\
 kvm: disabled by bios|\
 radeon kernel modesetting for R600 or later requires firmware-linux-nonfree."
 
+# Set this in /etc/sudoers.d/dmesg
+# nagios ALL = (root) NOPASSWD: /bin/dmesg
 output=$(sudo dmesg -T -l "$SEVERITIES" | egrep -v "$WHITELIST")
 
 if [ -z "$output" ]; then
