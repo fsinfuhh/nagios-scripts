@@ -1,9 +1,11 @@
 #!/bin/sh
-FAILED=$(systemctl | grep failed)
+FAILED=$(systemctl --failed --no-legend --plain | cut -d ' ' -f 1)
 
 if [ "$FAILED" ]; then
 	echo "Failed systemd services:"
-	echo ${FAILED}
+    for SERVICE in $FAILED; do
+        echo $SERVICE
+    done
 	exit 2
 else
 	echo "No systemd failures."
