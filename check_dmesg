@@ -9,7 +9,6 @@ Firmware Bug|\
 i8042: No controller|\
 Odd, counter constraints enabled but no core perfctrs detected|\
 Failed to access perfctr msr|\
-echo 0 > /proc/sys|\
 radeon 0000:0b:05.0|\
 drm:r100_cp_init|\
 Assuming drive cache: write through|\
