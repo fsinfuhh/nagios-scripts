@@ -37,7 +37,7 @@ for v in volumes:
 for volume, times in snapshot_times.items():
     # Check for multiple snapshots
     if len(times) > 2:
-        print(f'Multiple simplesnap snapshots for {volume}!')
+        print(f'Backups for {volume} have not been transfered successfully!')
         errors.append(volume)
     # Check for old backups
     elif datetime.now() - sorted(times)[-1] > timedelta(hours=25):
