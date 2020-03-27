@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+import socket
+from datetime import datetime, timedelta
+
+snapshot_volumes = subprocess.check_output(["sudo", "zfs", "list", "-t", "filesystem", "-o", "name,org.complete.simplesnap:exclude", "-H"]).decode().split('\n')
+volumes = []
+errors = []
+
+# Filter where exclude is not 'on'
+for v in snapshot_volumes:
+    if not v: continue
+    name, exclude = v.split('\t')
+    if exclude != 'on':
+        volumes.append(name)
+
+simplesnap_snapshots = subprocess.check_output(["sh", "-c", "sudo zfs list -t snapshot -o name | grep simplesnap"]).decode().split('\n')
+
+snapshot_times = dict()
+for s in simplesnap_snapshots:
+    if not s: continue
+    name, tag = s.split('@')
+    time_string = tag.split('_')[-3]
+    time = datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S")
+    if name in snapshot_times:
+        snapshot_times[name].append(time)
+    else:
+        snapshot_times[name] = [time]
+
+# Check if backups for all volumes are present
+for v in volumes:
+    if v not in snapshot_times:
+        print(f'No backups for {v}!')
+        errors.append(v)
+
+for volume, times in snapshot_times.items():
+    # Check for multiple snapshots
+    if len(times) > 2:
+        print(f'Multiple simplesnap snapshots for {volume}!')
+        errors.append(volume)
+    # Check for old backups
+    elif datetime.now() - sorted(times)[-1] > timedelta(hours=25):
+        print(f'Backup for {volume} more than one day old!')
+        errors.append(volume)
+
+for v in volumes:
+    if v not in errors:
+        print(f'Backup for {v} ok')
+
+if errors:
+    sys.exit(2)
