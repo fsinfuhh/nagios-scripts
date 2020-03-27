@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 snapshot_volumes = subprocess.check_output(["sudo", "zfs", "list", "-t", "filesystem", "-o", "name,org.complete.simplesnap:exclude", "-H"]).decode().split('\n')
 volumes = []
 errors = []
+messages = []
 
 # Filter where exclude is not 'on'
 for v in snapshot_volumes:
@@ -31,22 +32,27 @@ for s in simplesnap_snapshots:
 # Check if backups for all volumes are present
 for v in volumes:
     if v not in snapshot_times:
-        print(f'No backups for {v}!')
+        messages.append(f'No backups for {v}!')
         errors.append(v)
 
 for volume, times in snapshot_times.items():
     # Check for multiple snapshots
     if len(times) > 2:
-        print(f'Backups for {volume} have not been transfered successfully!')
+        messages.append(f'Backups for {volume} have not been transfered successfully!')
         errors.append(volume)
     # Check for old backups
     elif datetime.now() - sorted(times)[-1] > timedelta(hours=25):
-        print(f'Backup for {volume} more than one day old!')
+        messages.append(f'Backup for {volume} more than one day old!')
         errors.append(volume)
 
 for v in volumes:
     if v not in errors:
-        print(f'Backup for {v} ok')
+        messages.append(f'Backup for {v} ok')
 
 if errors:
+    print('Some backups were unsuccessful!')
+    print('\n'.join(messages))
     sys.exit(2)
+else:
+    print('All backups were successful')
+    print('\n'.join(messages))
