@@ -22,6 +22,7 @@ snapshot_times = dict()
 for s in simplesnap_snapshots:
     if not s: continue
     name, tag = s.split('@')
+    if name not in volumes: continue
     time_string = tag.split('_')[-3]
     time = datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S")
     if name in snapshot_times:
