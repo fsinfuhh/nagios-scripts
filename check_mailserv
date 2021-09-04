@@ -1,11 +1,14 @@
 #!/bin/bash
 
-PID=$(ps ax | grep 'manage.py mailserv' | grep -v grep | awk '{print $1}')
-if [ $PID ]; then
-	echo "mafiasi-mailserv is running with PID" $PID;
-	exit 0
+if nc -z localhost 2522; then
+    if nc -z localhost 2523; then
+        echo "Cloakserver and groupserver are running"
+        exit 0
+    else
+        echo "Groupserver is not running on port 2523"
+        exit 1
+    fi
 else
-	echo "Can't find mafiasi-mailserv process (manage.py mailserv).";
-	exit 2
+    echo "Cloakserver is not running on port 2522"
+    exit 2
 fi
-
